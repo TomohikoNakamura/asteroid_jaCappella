@@ -333,7 +333,7 @@ class XUMXManager(System):
         #
         self.val_dur_samples = model.sample_rate * val_dur
 
-    def validation_step(self, batch, batch_nb, dataloader_idx):
+    def validation_step(self, batch, batch_nb, dataloader_idx=0):
         """
         We calculate the ``validation loss'' by splitting each song into
         smaller chunks in order to prevent GPU out-of-memory errors.

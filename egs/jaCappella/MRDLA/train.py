@@ -57,7 +57,7 @@ class MRDLAManager(System):
             raise NotImplementedError
         return loss
 
-    def validation_step(self, batch, batch_nb, dataloader_idx):
+    def validation_step(self, batch, batch_nb, dataloader_idx=0):
         tag = "val"
         _, targets = batch[0], batch[1] # targets: batch x sources x channel x time
         inputs = targets.sum(dim=1) # batch x sources x channels

@@ -91,7 +91,7 @@ class AugSystem(System):
         reordered_est_targets = torch.cat(reordered_est_targets, dim=reordered_est_targets[0].ndim-1)
         return loss, reordered_est_targets
 
-    def validation_step(self, batch, batch_nb, dataloader_idx):
+    def validation_step(self, batch, batch_nb, dataloader_idx=0):
         """
         We calculate the ``validation loss'' by splitting each song into
         smaller chunks in order to prevent GPU out-of-memory errors.
