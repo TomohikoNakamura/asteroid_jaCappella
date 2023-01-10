@@ -1,0 +1,45 @@
+# Filterbank config
+filterbank:
+  n_filters: 64
+  kernel_size: 32
+  stride: 16
+# Network config
+masknet:
+  in_chan: 64
+  n_src: 6
+  out_chan: 64
+  ff_hid: 256
+  ff_activation: "relu"
+  norm_type: "gLN"
+  chunk_size: 174
+  hop_size: 128
+  n_repeats: 8
+  mask_act: 'sigmoid'
+  bidirectional: true
+  dropout: 0
+# Training config
+training:
+  epochs: 600
+  batch_size: 1
+  half_lr: yes
+  early_stop: yes
+  gradient_clipping: 5
+  ckpt_path: null
+  loss_func: "pit_sisdr"
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.005
+  weight_decay: !!float 1e-5
+# Data config
+data:
+  train_dir: ./data/augmented
+  sample_rate: 48000
+  output: ./exp
+  num_workers: 8
+  seed: 42
+  seq_dur: 5.046
+  samples_per_track: 13 # This comes from the fact that the average track length of the jaCappella training songs is around 1/5 of that of MUSDB18 dataset.
+  sources: ["vocal_percussion", "bass", "alto", "tenor", "soprano", "lead_vocal"]
+  source_augmentations:
+    - gain

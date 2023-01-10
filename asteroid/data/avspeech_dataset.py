@@ -1,5 +1,5 @@
 import re
-import librosa
+import soundfile
 import numpy as np
 from pathlib import Path
 import torch
@@ -81,7 +81,7 @@ class Signal:
     def _load(self, sr: int):
         import cv2  # Fix sphinx import
 
-        self.audio, _ = librosa.load(self.audio_path.as_posix(), sr=sr)
+        self.audio, _ = soundfile.read(self.audio_path.as_posix(), sr=sr)
         self.video = cv2.VideoCapture(self.video_path.as_posix())
 
     def _check_video_embed(self, embed_ext=".npy"):
@@ -194,7 +194,7 @@ class AVSpeechDataset(data.Dataset):
             all_signals.append(signal)
 
         # input audio signal is the last column.
-        mixed_signal, _ = librosa.load(row.loc["mixed_audio"], sr=16_000)
+        mixed_signal, _ = soundfile.load(row.loc["mixed_audio"], sr=16_000)
         mixed_signal_tensor = self.encode(mixed_signal, stft_encoder=self.stft_encoder)
 
         audio_tensors = []

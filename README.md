@@ -1,3 +1,6 @@
+# Codes of vocal ensemble separation using the jaCappella corpus is in `egs/jaCappella`
+
+--------------------------------------------------------------------------------
 <div align="center">
 <img src="docs/source/_static/images/asteroid_logo_dark.png" width="50%">
 

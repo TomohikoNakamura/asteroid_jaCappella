@@ -1,0 +1,47 @@
+# Training config
+training:
+  epochs: 1000
+  batch_size: 16
+  ckpt_path: null
+
+loss_func:
+  lambda_t: 10.0
+  lambda_f: 1.0
+  band: high
+
+# Optim config
+optim:
+  optimizer: adam
+  lr: 0.0001
+  patience: 1000
+  lr_decay_patience: 50
+  lr_decay_gamma: 0.3
+  weight_decay: 0.0
+# Data config
+data:
+  train_dir: ./data/augmented
+  output: ./exp
+  sample_rate: 48000
+  num_workers: 8
+  seed: 42
+  seq_dur: 6.0
+  samples_per_track: 13 # This is because the average track length of jaCappella training songs are around 1/5 of that of MUSDB18 dataset.
+  source_augmentations:
+    - gain
+  sources: ["vocal_percussion", "bass", "alto", "tenor", "soprano", "lead_vocal"]
+  in_memory: true
+# Network config
+model:
+  signal_ch: 1
+  L: 12
+  C_enc: 64
+  C_mid: 768
+  C_dec: 64
+  f_enc: 21
+  f_dec: 21
+  wavelet: "haar"
+  context: false
+  padding_type: "reflect"
+  activation: "GELU"
+  input_length: 288000
+  weight_initialization: null
