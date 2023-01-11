@@ -1,4 +1,4 @@
-# Codes of vocal ensemble separation using the jaCappella corpus is in `egs/jaCappella`
+** See `egs/jaCappella` for codes of vocal ensemble separation using the jaCappella corpus
 
 --------------------------------------------------------------------------------
 <div align="center">
