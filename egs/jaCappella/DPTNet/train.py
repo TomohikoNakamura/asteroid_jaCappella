@@ -108,14 +108,14 @@ class AugSystem(System):
         loss, reordered_est_targets = self._sequential_common_step(batch, batch_nb)
         self.log(f"{tag}_loss", loss, on_epoch=True, prog_bar=True, sync_dist=True)
         #
-        inputs = inputs.reshape(-1, inputs.shape[-1]) # 1 x time_length
-        targets = targets.reshape(targets.shape[1], -1) # 1 x time_length
-        reordered_est_targets = reordered_est_targets.reshape(reordered_est_targets.shape[1], -1) # 1 x time_length
-        metrics = get_metrics(inputs.cpu().numpy(), targets.cpu().numpy(), reordered_est_targets.cpu().numpy(), sample_rate=self.config["data"]["sample_rate"], metrics_list=["si_sdr"], average=False)
-        val_sisdr = metrics["si_sdr"].reshape(-1) - metrics["input_si_sdr"].reshape(-1)
-        self.log(f"{tag}_sisdr/average", float(val_sisdr.mean()), on_epoch=True, prog_bar=True, sync_dist=True)
-        for i, source in enumerate(self.sources):
-            self.log(f"{tag}_sisdr/{source}", float(val_sisdr[i]), on_epoch=True, prog_bar=False, sync_dist=True)
+        # inputs = inputs.reshape(-1, inputs.shape[-1]) # 1 x time_length
+        # targets = targets.reshape(targets.shape[1], -1) # 1 x time_length
+        # reordered_est_targets = reordered_est_targets.reshape(reordered_est_targets.shape[1], -1) # 1 x time_length
+        # metrics = get_metrics(inputs.cpu().numpy(), targets.cpu().numpy(), reordered_est_targets.cpu().numpy(), sample_rate=self.config["data"]["sample_rate"], metrics_list=["si_sdr"], average=False)
+        # val_sisdr = metrics["si_sdr"].reshape(-1) - metrics["input_si_sdr"].reshape(-1)
+        # self.log(f"{tag}_sisdr/average", float(val_sisdr.mean()), on_epoch=True, prog_bar=True, sync_dist=True)
+        # for i, source in enumerate(self.sources):
+        #     self.log(f"{tag}_sisdr/{source}", float(val_sisdr[i]), on_epoch=True, prog_bar=False, sync_dist=True)
 
 def main(conf, args):
     # Set seed for random

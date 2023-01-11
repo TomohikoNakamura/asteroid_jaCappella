@@ -65,15 +65,15 @@ class MRDLAManager(System):
         loss = self.loss_func(est_targets, targets) 
         self.log(f"{tag}_loss", loss, on_epoch=True, prog_bar=True, sync_dist=True)
         #
-        time_hat = est_targets # source x batch x channel x time
-        inputs = inputs.reshape(-1, inputs.shape[-1])
-        targets = targets.reshape(targets.shape[1], -1)
-        time_hat = time_hat.reshape(time_hat.shape[1], -1)
-        metrics = get_metrics(inputs.cpu().numpy(), targets.cpu().numpy(), time_hat.cpu().numpy(), sample_rate=self.config["data"]["sample_rate"], metrics_list=["si_sdr"], average=False)
-        val_sisdr = metrics["si_sdr"].reshape(-1) - metrics["input_si_sdr"].reshape(-1)
-        self.log(f"{tag}_sisdr/average", float(val_sisdr.mean()), on_epoch=True, prog_bar=True, sync_dist=True)
-        for i, source in enumerate(self.sources):
-            self.log(f"{tag}_sisdr/{source}", float(val_sisdr[i]), on_epoch=True, prog_bar=False, sync_dist=True)
+        # time_hat = est_targets # source x batch x channel x time
+        # inputs = inputs.reshape(-1, inputs.shape[-1])
+        # targets = targets.reshape(targets.shape[1], -1)
+        # time_hat = time_hat.reshape(time_hat.shape[1], -1)
+        # metrics = get_metrics(inputs.cpu().numpy(), targets.cpu().numpy(), time_hat.cpu().numpy(), sample_rate=self.config["data"]["sample_rate"], metrics_list=["si_sdr"], average=False)
+        # val_sisdr = metrics["si_sdr"].reshape(-1) - metrics["input_si_sdr"].reshape(-1)
+        # self.log(f"{tag}_sisdr/average", float(val_sisdr.mean()), on_epoch=True, prog_bar=True, sync_dist=True)
+        # for i, source in enumerate(self.sources):
+        #     self.log(f"{tag}_sisdr/{source}", float(val_sisdr[i]), on_epoch=True, prog_bar=False, sync_dist=True)
 
 def main(conf: Dict, args):
     # Set seed for random
