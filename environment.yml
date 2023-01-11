@@ -1,13 +1,13 @@
 name: asteroid_jaCappella
 channels:
   - pytorch
-  - anaconda
+  - nvidia
   - conda-forge
 dependencies:
   - python=3.10
   - Cython
-  - cudatoolkit=11.6
-  - pytorch>=1.13
+  - pytorch-cuda=11.6
+  - pytorch
   - torchvision
   - torchaudio
   - libsndfile
