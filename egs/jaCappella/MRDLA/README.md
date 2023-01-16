@@ -19,6 +19,7 @@ python separate.py --model_dir pretrained --output_dir /path/to/output/dir /path
     - line 359: `assert self.K_source <= 5, _get_err_msg(` -> `assert self.K_source <= 10, _get_err_msg(`
     - line 364: `assert self.K_source <= 5, _get_err_msg(` -> `assert self.K_source <= 10, _get_err_msg(`
 - Once the above modification is done, there is no need to do it again.
+- Create augmented dataset (see [here](../README.md#how-to-create-augmented-data))
 
 ## Training model
 ```
