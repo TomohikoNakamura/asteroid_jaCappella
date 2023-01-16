@@ -241,13 +241,12 @@ class MRDLA(_MRDLA_Base):
         padding_type (str): Padding type for the convolutional layers
         input_length (int): Input signal length (Time interval for sequential processing in the inference stage)
         output_length (int): Output signal length
-        weight_initialization (str): Weight initialization method. If None, use the pytorch's default initialization.
         sample_rate (int): Sampling rate
 
     References:
         [1] Tomohiko Nakamura, Shihori Kozuka, and Hiroshi Saruwatari, "Time-domain audio source separation with neural networks based on multiresolution analysis," IEEE/ACM Transactions on Audio, Speech, and Language Processing, vol. 29, pp. 1687--1701, Apr. 2021.
     """
-    def __init__(self, signal_ch=1, n_srcs=4, L=12, C_enc=36, C_mid=432, C_dec=36, f_enc=9, f_dec=9, wavelet="haar", context=True, padding_type="reflect", activation="LeakyReLU", input_length=147443, sample_rate=48000, weight_initialization=None):
+    def __init__(self, signal_ch=1, n_srcs=4, L=12, C_enc=36, C_mid=432, C_dec=36, f_enc=9, f_dec=9, wavelet="haar", context=True, padding_type="reflect", activation="LeakyReLU", input_length=147443, sample_rate=48000):
         super().__init__(sample_rate=sample_rate)
         self.signal_ch = signal_ch
         self.n_srcs = n_srcs
@@ -319,7 +318,6 @@ class MRDLA(_MRDLA_Base):
             "activation": self.activation,
             "input_length": self.input_length,
             "sample_rate": self.sample_rate,
-            "weight_initialization": self.weight_initialization,
         }
         return model_args
 
@@ -339,7 +337,6 @@ class MRDLA_WNTDWTL(_MRDLA_Base):
         padding_type (str): Padding type for the convolutional layers
         input_length (int): Input signal length (Time interval for sequential processing in the inference stage)
         output_length (int): Output signal length
-        weight_initialization (str): Weight initialization method. If None, use the pytorch's default initialization.
         sample_rate (int): Sampling rate
 
     References:
@@ -349,7 +346,7 @@ class MRDLA_WNTDWTL(_MRDLA_Base):
         wavelet_params_list=[
              dict(predict_ksize=3, update_ksize=3, requires_grad={"predict": True, "update": True}, initial_values={"predict": [0,1,0], "update": [0,0.5,0]}),
         ],
-        context=True, padding_type="reflect", activation="LeakyReLU", input_length=147443, weight_normalized=True, sample_rate=48000, weight_initialization=None, wavelet=None):
+        context=True, padding_type="reflect", activation="LeakyReLU", input_length=147443, weight_normalized=True, sample_rate=48000, wavelet=None):
         super().__init__(sample_rate=sample_rate)
         self.signal_ch = signal_ch
         self.n_srcs = n_srcs
@@ -363,7 +360,6 @@ class MRDLA_WNTDWTL(_MRDLA_Base):
         self.padding_type = padding_type
         self.activation = activation
         self.input_length = input_length
-        self.weight_initialization = weight_initialization
         ####
         if self.context:
             self.input_length = input_length
@@ -423,7 +419,6 @@ class MRDLA_WNTDWTL(_MRDLA_Base):
             "activation": self.activation,
             "input_length": self.input_length,
             "weight_normalized": isinstance(self.dwt, WeightNormalizedMultiStageLWT),
-            "sample_rate": self.sample_rate,
-            "weight_initialization": self.weight_initialization,
+            "sample_rate": self.sample_rate
         }
         return model_args

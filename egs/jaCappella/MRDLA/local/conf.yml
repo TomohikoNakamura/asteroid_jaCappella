@@ -44,4 +44,3 @@ model:
   padding_type: "reflect"
   activation: "GELU"
   input_length: 288000
-  weight_initialization: null
