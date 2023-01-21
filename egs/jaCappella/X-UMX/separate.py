@@ -1,58 +1,16 @@
 import argparse
-import sys
 from pathlib import Path
 
-import numpy as np
 import norbert
+import numpy as np
 import resampy
 import scipy.signal
 import soundfile as sf
 import torch
-import yaml
-from asteroid.complex_nn import torch_complex_from_magphase
-from asteroid.data import jaCappellaCorpus
-from asteroid.models import XUMX, x_umx
 from tqdm import tqdm
 
-from train import define_model
-from collections import OrderedDict
-
-
-def _load_model_from_ckpt(model_path: Path, device='cpu'):
-    with open(model_path.parent.parent / 'conf.yml', 'r') as fp:
-        conf = yaml.load(fp, Loader=yaml.SafeLoader)
-
-    model = define_model(
-        scaler_mean=None,
-        scaler_std=None,
-        sample_rate=conf['data']['sample_rate'],
-        in_chan=conf['model']['in_chan'],
-        bandwidth=conf['model']['bandwidth'],
-        window_length=conf['model']['window_length'],
-        nb_channels=conf['model']['nb_channels'],
-        hidden_size=conf['model']['hidden_size'],
-        nhop=conf['model']['nhop'],
-        sources=conf['data']['sources'],
-        bidirectional=conf['model']['bidirectional'],
-        spec_power=conf['model']['spec_power'],
-        loss_use_multidomain=conf['training']['loss_use_multidomain']
-    )
-    _weights = torch.load(model_path, map_location=device)["state_dict"]
-    weights = OrderedDict()
-    for k, v in _weights.items():
-        if "model." in k:
-            weights[k.replace("model.", "")] = v
-    model.load_state_dict(weights)
-    model.eval()
-    model.to(device)
-    return model, model.sources
-
-def _load_model(model_name, device='cpu'):
-    print('Loading model from: {}'.format(model_name), file=sys.stderr)
-    model = XUMX.from_pretrained(str(model_name))
-    model.eval()
-    model.to(device)
-    return model, model.sources
+from asteroid.complex_nn import torch_complex_from_magphase
+from eval import load_model
 
 def istft(X, rate=48000, n_fft=4096, n_hopsize=1024):
     t, audio = scipy.signal.istft(
@@ -193,23 +151,9 @@ def inference_args(parser, remaining_args):
     )
     return inf_parser.parse_args()
 
-def load_model(args, device):
-    if args.model_dir is not None:
-        model_path = Path(args.model_dir) / 'best_model.pth'
-        load_func = _load_model
-    else:
-        model_path = Path(args.ckpt)
-        load_func = _load_model_from_ckpt
-    if not model_path.exists():
-        raise ValueError(f'Model file not found [{model_path}]')
-    model, sources = load_func(model_path, device=device)
-    return model, sources
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
-    arg_group = parser.add_mutually_exclusive_group(required=True)
-    arg_group.add_argument('--ckpt', type=str, help='checkpoint', default=None)
-    arg_group.add_argument('--model_dir', type=str, help='Results path where ' 'best_model.pth' ' is stored', default=None)
+    parser.add_argument('--model_dir', type=str, help='Results path where ' 'best_model.pth' ' is stored', default=None)
     parser.add_argument('--start', type=float, default=0.0, help='Audio chunk start in seconds')
     parser.add_argument('--duration', type=float, default=-1.0, help='Audio chunk duration in seconds, negative values load full track')
     parser.add_argument('--no-cuda', action='store_true', default=False, help='disables CUDA inference')
@@ -218,12 +162,12 @@ if __name__ == "__main__":
     args, _ = parser.parse_known_args()
     args = inference_args(parser, args)
 
-    if args.model_dir is not None:
-        model_path = Path(args.model_dir) / 'best_model.pth'
+    if args.model_dir is None:
+        model_path = None
     else:
-        model_path = Path(args.ckpt)
-    if not model_path.exists():
-        raise ValueError(f'Model file not found [{model_path}]')
+        model_path = Path(args.model_dir) / 'best_model.pth'
+        if not model_path.exists():
+            raise ValueError(f'Model file not found [{model_path}]')
 
     # device
     use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -231,7 +175,7 @@ if __name__ == "__main__":
     out_root_dir = Path(args.output_dir)
 
     # load model
-    model, sources = load_model(args, device)
+    model, sources = load_model(model_path, device)
     assert model.nb_channels==1, f'Supported only monaural model'
 
     #

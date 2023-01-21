@@ -10,7 +10,7 @@ pip install -r requirements.txt
 # Separating signals
 - Use the pretrained model
 ```
-python separate.py --model_dir pretrained --output_dir /path/to/output/dir /path/to/to-be-separated/mixture/file
+python separate.py --output_dir /path/to/output/dir /path/to/to-be-separated/mixture/file
 ```
 
 # Train your own model

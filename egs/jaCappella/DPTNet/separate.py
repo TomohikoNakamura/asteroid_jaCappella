@@ -1,26 +1,14 @@
 import argparse
-import sys
 from pathlib import Path
-import yaml
 
 import numpy
 import resampy
 import soundfile as sf
 import torch
 from tqdm import tqdm
-from asteroid.models import DPTNet
 
 from collections import OrderedDict
-from eval import normalize_estimates_by_mse
-
-def _load_model(model_name, device='cpu'):
-    print('Loading model from: {}'.format(model_name), file=sys.stderr)
-    model = DPTNet.from_pretrained(str(model_name))
-    model.eval()
-    model.to(device)
-    with open(model_name.parent / "conf.yml", "r") as fp:
-        conf = yaml.safe_load(fp)
-    return model, conf["data"]["sources"]
+from eval import normalize_estimates_by_mse, load_model
 
 def separate(
     audio,
@@ -85,18 +73,9 @@ def inference_args(parser, remaining_args):
 
     return inf_parser.parse_args()
 
-
-def load_model(args, device):
-    model_path = Path(args.model_dir) / 'best_model.pth'
-    load_func = _load_model
-    if not model_path.exists():
-        raise ValueError(f'Model file not found [{model_path}]')
-    model, sources = load_func(model_path, device=device)
-    return model, sources
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--model_dir', type=str, help='Results path where ' 'best_model.pth' ' is stored', default=None, required=True)
+    parser.add_argument('--model_dir', type=str, help='Results path where ' 'best_model.pth' ' is stored', default=None)
     parser.add_argument('--start', type=float, default=0.0, help='Audio chunk start in seconds')
     parser.add_argument('--duration', type=float, default=-1.0, help='Audio chunk duration in seconds, negative values load full track')
     parser.add_argument('--no-cuda', action='store_true', default=False, help='disables CUDA inference')
@@ -106,12 +85,12 @@ if __name__ == "__main__":
     args, _ = parser.parse_known_args()
     args = inference_args(parser, args)
 
-    if args.model_dir is not None:
-        model_path = Path(args.model_dir) / 'best_model.pth'
+    if args.model_dir is None:
+        model_path = None
     else:
-        model_path = Path(args.ckpt)
-    if not model_path.exists():
-        raise ValueError(f'Model file not found [{model_path}]')
+        model_path = Path(args.model_dir) / 'best_model.pth'
+        if not model_path.exists():
+            raise ValueError(f'Model file not found [{model_path}]')
 
     # device
     use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -119,7 +98,7 @@ if __name__ == "__main__":
     out_root_dir = Path(args.output_dir)
 
     # load model
-    model, sources = load_model(args, device)
+    model, sources, _, _ = load_model(model_path, device)
 
     # Stack to-be-separated audio files
     input_files = [Path(_) for _ in args.input_files]

@@ -10,6 +10,7 @@ import yaml
 from asteroid.metrics import get_metrics
 from asteroid.models import DPTNet
 from tqdm import tqdm
+import huggingface_hub
 
 from local import dataloader
 
@@ -68,46 +69,27 @@ def evaluate_for_pit_trained_model(estimates: numpy.ndarray, targets: numpy.ndar
     input_sisdr = numpy.stack(best_input_sisdr_list, axis=1).mean(axis=1)
     return sisdr_improvements, sisdr, input_sisdr
 
-def evaluate(estimates: numpy.ndarray, targets: numpy.ndarray, mix: numpy.ndarray, sample_rate: float=48000):
-    '''Evaluate the source estimates
-
-    Args:
-        estimates (numpy.ndarray): Source estimates (n_sources x n_channels x time)
-        targets (numpy.ndarray): Groundtruths (n_sources x n_channels x time)
-        mix (numpy.ndarray): Input mixture (n_channels x time)
-
-    Return:
-        numpy.ndarray: SI-SDR improvements [dB] averaged over channel (n_sources)
-    '''
-    estimates = estimates.astype(numpy.float64)
-    targets = targets.astype(numpy.float64)
-    mix = mix.astype(numpy.float64)
-    #
-    n_sources, n_channels, time_length = estimates.shape
-    best_sisdr_improvements_list = []
-    sisdr_list = []
-    input_sisdr_list = []
-    for c in range(n_channels):
-        metrics = get_metrics(mix[c,:], targets[:,c,:], estimates[:,c,:], sample_rate=sample_rate, compute_permutation=False, average=False, metrics_list=["si_sdr"])
-        sisdr, input_sisdr = metrics["si_sdr"], metrics["input_si_sdr"]
-        sisdr = sisdr.reshape(n_sources)
-        input_sisdr = input_sisdr.reshape(n_sources)
-        best_sisdr_imp = sisdr - input_sisdr
-        best_sisdr_improvements_list.append(best_sisdr_imp) # sources x 1
-        sisdr_list.append(sisdr)
-        input_sisdr_list.append(input_sisdr)
-    sisdr_improvements = numpy.stack(best_sisdr_improvements_list, axis=1) # sources x channel
-    sisdr_improvements = sisdr_improvements.mean(axis=1)
-    sisdr = numpy.stack(sisdr_list, axis=1).mean(axis=1)
-    input_sisdr = numpy.stack(input_sisdr_list, axis=1).mean(axis=1)
-    return sisdr_improvements, sisdr, input_sisdr
-
-def load_model(model_name, device='cpu'):
-    model = DPTNet.from_pretrained(str(model_name))
+def load_model(model_name: Path, device='cpu'):
+    if model_name is None:
+        model_name = huggingface_hub.hf_hub_download(
+            repo_id="tnkmr/DPTNet_jaCappella_VES_48k",
+            filename="best_model.pth",
+            cache_dir="pretrained",
+        )
+        model = DPTNet.from_pretrained(str(model_name))
+        conf_name = huggingface_hub.hf_hub_download(
+            repo_id="tnkmr/DPTNet_jaCappella_VES_48k",
+            filename="conf.yml",
+            cache_dir="pretrained",
+        )
+        with open(conf_name, "r") as fp:
+            conf = yaml.safe_load(fp)
+    else:
+        model = DPTNet.from_pretrained(str(model_name))
+        with open(model_name.parent / "conf.yml", "r") as fp:
+            conf = yaml.safe_load(fp)
     model.eval()
     model.to(device)
-    with open(model_name.parent / "conf.yml", "r") as fp:
-        conf = yaml.safe_load(fp)
     return model, conf["data"]["sources"], conf["data"]["seq_dur"], conf
 
 def separate_for_pit_trained_model(

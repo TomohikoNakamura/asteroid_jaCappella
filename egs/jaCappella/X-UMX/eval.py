@@ -3,16 +3,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
+import huggingface_hub
 import norbert
 import numpy
+import pandas
 import scipy.signal
 import torch
+from local import dataloader
+from tqdm import tqdm
+
 from asteroid.complex_nn import torch_complex_from_magphase
 from asteroid.metrics import get_metrics
 from asteroid.models import XUMX
-from tqdm import tqdm
-import pandas
-from local import dataloader
 
 
 @dataclass
@@ -47,11 +49,18 @@ def evaluate(estimates: numpy.ndarray, targets: numpy.ndarray, mix: numpy.ndarra
     return sisdr_improvements, sisdrs, input_sisdrs
     
 
-def load_model(model_name, device='cpu'):
+def load_model(model_name: Path, device='cpu'):
+    if model_name is None:
+        model_name = huggingface_hub.hf_hub_download(
+            repo_id="tnkmr/XUMX_jaCappella_VES_48k",
+            filename="best_model.pth",
+            cache_dir="pretrained",
+        )
     model = XUMX.from_pretrained(str(model_name))
     model.eval()
     model.to(device)
     return model, model.sources
+
 
 def istft(X, rate=48000, n_fft=4096, n_hopsize=1024):
     t, audio = scipy.signal.istft(

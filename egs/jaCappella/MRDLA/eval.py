@@ -3,16 +3,16 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
+import huggingface_hub
 import numpy
 import pandas
 import torch
 import yaml
-from asteroid.metrics import get_metrics
+from local import dataloader
+from mrdla import MRDLA
 from tqdm import tqdm
 
-from local import dataloader
-from mrdla import MRDLA, MRDLA_WNTDWTL
-
+from asteroid.metrics import get_metrics
 
 @dataclass
 class DummyArgs:
@@ -46,14 +46,26 @@ def evaluate(estimates: numpy.ndarray, targets: numpy.ndarray, mix: numpy.ndarra
     
 
 def load_model(model_name: Path, device='cpu'):
-    try:
+    if model_name is None:
+        model_name = huggingface_hub.hf_hub_download(
+            repo_id="tnkmr/MRDLA_jaCappella_VES_48k",
+            filename="best_model.pth",
+            cache_dir="pretrained",
+        )
         model = MRDLA.from_pretrained(str(model_name))
-    except:
-        model = MRDLA_WNTDWTL.from_pretrained((str(model_name)))
+        conf_name = huggingface_hub.hf_hub_download(
+            repo_id="tnkmr/MRDLA_jaCappella_VES_48k",
+            filename="conf.yml",
+            cache_dir="pretrained",
+        )
+        with open(conf_name, "r") as fp:
+            conf = yaml.safe_load(fp)
+    else:
+        model = MRDLA.from_pretrained(str(model_name))
+        with open(model_name.parent / "conf.yml", "r") as fp:
+            conf = yaml.safe_load(fp)
     model.eval()
     model.to(device)
-    with open(model_name.parent / "conf.yml", "r") as fp:
-        conf = yaml.safe_load(fp)
     return model, conf["data"]["sources"]
 
 def separate(

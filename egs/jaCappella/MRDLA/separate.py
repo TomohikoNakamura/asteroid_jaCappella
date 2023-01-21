@@ -11,7 +11,7 @@ from eval import load_model, separate
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--model_dir', type=str, help='Results path where ' 'best_model.pth' ' is stored', default=None, required=True)
+    parser.add_argument('--model_dir', type=str, help='Results path where ' 'best_model.pth' ' is stored', default=None)
     parser.add_argument('--start', type=float, default=0.0, help='Audio chunk start in seconds')
     parser.add_argument('--duration', type=float, default=-1.0, help='Audio chunk duration in seconds, negative values load full track')
     parser.add_argument('--no-cuda', action='store_true', default=False, help='disables CUDA inference')
@@ -20,12 +20,12 @@ if __name__ == "__main__":
     parser.add_argument('input_files', type=str, nargs="*")
     args = parser.parse_args()
 
-    if args.model_dir is not None:
-        model_path = Path(args.model_dir) / 'best_model.pth'
+    if args.model_dir is None:
+        model_path = None
     else:
-        model_path = Path(args.ckpt)
-    if not model_path.exists():
-        raise ValueError(f'Model file not found [{model_path}]')
+        model_path = Path(args.model_dir) / 'best_model.pth'
+        if not model_path.exists():
+            raise ValueError(f'Model file not found [{model_path}]')
 
     # device
     use_cuda = not args.no_cuda and torch.cuda.is_available()
