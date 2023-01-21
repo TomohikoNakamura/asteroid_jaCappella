@@ -35,7 +35,7 @@ class DummyArgs:
     test_dir: Path
     sources: List[str]
 
-def evaluate_for_pit_trained_model(estimates: numpy.ndarray, targets: numpy.ndarray, mix: numpy.ndarray, sample_rate: float=48000):
+def evaluate(estimates: numpy.ndarray, targets: numpy.ndarray, mix: numpy.ndarray, sample_rate: float=48000):
     '''Evaluate the source estimates
 
     Args:
@@ -92,7 +92,7 @@ def load_model(model_name: Path, device='cpu'):
     model.to(device)
     return model, conf["data"]["sources"], conf["data"]["seq_dur"], conf
 
-def separate_for_pit_trained_model(
+def separate(
     audio,
     model,
     voice_parts,
@@ -159,7 +159,7 @@ if __name__ == "__main__":
             track_path = test_dataset.get_track_path(data_index)
             mix, gts = test_dataset[data_index]
             with torch.inference_mode():
-                estimates = separate_for_pit_trained_model(
+                estimates = separate(
                     mix, # n_channels x time
                     model,
                     sources,
@@ -171,7 +171,7 @@ if __name__ == "__main__":
                     estimates = normalize_estimates_by_mse(estimates, mix)
                 #####
                 gts = gts.numpy()
-                sisdr_improvements, sisdrs, input_sisdrs = evaluate_for_pit_trained_model(estimates, gts, mix.numpy(), sample_rate=test_dataset.sample_rate)
+                sisdr_improvements, sisdrs, input_sisdrs = evaluate(estimates, gts, mix.numpy(), sample_rate=test_dataset.sample_rate)
                 for i, source_name in enumerate(sources):
                     print(f'{track_path.name},{source_name},{float(sisdr_improvements[i])},{float(sisdrs[i])},{float(input_sisdrs[i])}', file=fp)
     #####
