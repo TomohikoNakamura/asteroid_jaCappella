@@ -2,6 +2,7 @@
 
 # Setup
 - Setup the conda environment of asteroid (see asteroid web page)
+    - If the installation hangs, execute `conda config --set channel_priority strict`.
 - Install some packages
 ```
 pip install -r requirements.txt
