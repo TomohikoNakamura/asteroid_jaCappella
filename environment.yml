@@ -6,12 +6,12 @@ channels:
 dependencies:
   - python=3.10
   - Cython
-  - pytorch::pytorch-cuda=11.6
-  - pytorch::pytorch
-  - pytorch::torchvision
-  - pytorch::torchaudio
+  - pytorch::pytorch-cuda=11.7
+  - pytorch::pytorch=1.13.1
+  - pytorch::torchvision=0.14.1
+  - pytorch::torchaudio=0.13.1
   - conda-forge::libsndfile
-  - conda-forge::pytorch-lightning
+  - conda-forge::pytorch-lightning<2.0.0
   - pip:
     - scipy>=1.1.0
     - asteroid-filterbanks>=0.4.0
